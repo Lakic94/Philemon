@@ -4,8 +4,22 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "echo \"web implemented in PHI-10\"",
-    "build": "echo \"web build in PHI-10\"",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@philemon/auth-client": "workspace:*",
+    "@philemon/types": "workspace:*",
+    "@philemon/ui": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.0.7"
   }
 }
