@@ -48,6 +48,9 @@ export function TopBar({
         <button className={tab === "plan" ? "active" : ""} onClick={() => setTab("plan")}>
           Plan
         </button>
+        <button className={tab === "builder" ? "active" : ""} onClick={() => setTab("builder")}>
+          Builder
+        </button>
         <button className={tab === "dashboard" ? "active" : ""} onClick={() => setTab("dashboard")}>
           Dashboard
         </button>
