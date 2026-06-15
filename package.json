@@ -1,0 +1,27 @@
+{
+  "name": "philemon",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Philemon — personal everything-app platform",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@10.26.2",
+  "scripts": {
+    "infra:up": "docker compose --env-file .env -f infra/docker-compose.yml up -d",
+    "infra:down": "docker compose --env-file .env -f infra/docker-compose.yml down",
+    "infra:logs": "docker compose --env-file .env -f infra/docker-compose.yml logs -f",
+    "auth:dev": "pnpm --filter @philemon/auth dev",
+    "api:dev": "pnpm --filter @philemon/furnishing-api dev",
+    "web:dev": "pnpm --filter @philemon/furnishing-web dev",
+    "db:migrate": "pnpm --filter @philemon/furnishing-api db:migrate",
+    "db:seed": "pnpm --filter @philemon/furnishing-api db:seed",
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

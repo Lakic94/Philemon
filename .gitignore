@@ -8,6 +8,7 @@ secrets/
 
 # Dependencies
 node_modules/
+.pnpm-store/
 .venv/
 venv/
 __pycache__/
@@ -19,6 +20,11 @@ build/
 .next/
 out/
 target/
+*.tsbuildinfo
+
+# Tooling caches
+.turbo/
+.cache/
 
 # OS / editor cruft
 .DS_Store
@@ -29,3 +35,4 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+pnpm-debug.log*

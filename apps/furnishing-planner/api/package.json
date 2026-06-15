@@ -1,0 +1,12 @@
+{
+  "name": "@philemon/furnishing-api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"api implemented in PHI-8\"",
+    "db:migrate": "echo \"migrations in PHI-8\"",
+    "db:seed": "echo \"seed in PHI-9\"",
+    "typecheck": "tsc --noEmit"
+  }
+}

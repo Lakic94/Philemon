@@ -1,0 +1,11 @@
+{
+  "name": "@philemon/furnishing-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"web implemented in PHI-10\"",
+    "build": "echo \"web build in PHI-10\"",
+    "typecheck": "tsc --noEmit"
+  }
+}

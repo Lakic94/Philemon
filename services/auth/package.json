@@ -1,0 +1,10 @@
+{
+  "name": "@philemon/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"auth service implemented in PHI-7\"",
+    "typecheck": "tsc --noEmit"
+  }
+}
