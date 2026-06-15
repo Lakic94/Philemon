@@ -1,18 +1,20 @@
 import { useState } from "react";
-import { Button, Card, Field, Input, Kicker, PanelBody, Select, Stack, Textarea } from "@philemon/ui";
-import type { Category, Item, ItemStatus } from "@philemon/types";
+import { Button, Card, Field, Input, Kicker, Select, Stack, Textarea } from "@philemon/ui";
+import type { Category, Item, ItemStatus, RoomGeometry } from "@philemon/types";
 import { api, uploadImage } from "../api.js";
 
 export function ItemEditor({
   zoneId,
   item,
   categories,
+  roomGeometry,
   onClose,
   onSaved,
 }: {
   zoneId: string;
   item: Item | null;
   categories: Category[];
+  roomGeometry: RoomGeometry | null;
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {
@@ -127,6 +129,19 @@ export function ItemEditor({
                 <Field label="Rate (€/m²)">
                   <Input mono type="number" step="0.01" value={rateEur} placeholder="—" onChange={(e) => setRateEur(e.target.value)} />
                 </Field>
+                {roomGeometry && (
+                  <div className="span2 ph-row" style={{ gap: "var(--ph-space-2)", flexWrap: "wrap" }}>
+                    <span className="ph-muted ph-mono" style={{ fontSize: "var(--ph-text-xs)" }}>
+                      from plan:
+                    </span>
+                    <Button type="button" size="sm" variant="outline" onClick={() => setAreaM2(String(roomGeometry.floorAreaM2))}>
+                      Floor {roomGeometry.floorAreaM2} m²
+                    </Button>
+                    <Button type="button" size="sm" variant="outline" onClick={() => setAreaM2(String(roomGeometry.wallAreaM2))}>
+                      Walls {roomGeometry.wallAreaM2} m²
+                    </Button>
+                  </div>
+                )}
               </>
             )}
 

@@ -64,6 +64,7 @@ export function RoomDetail({ room, data }: { room: RoomNode; data: DataState }) 
           zoneId={editing.zoneId}
           item={editing.item}
           categories={data.categories}
+          roomGeometry={room.geometry}
           onClose={() => setEditing(null)}
           onSaved={data.reload}
         />

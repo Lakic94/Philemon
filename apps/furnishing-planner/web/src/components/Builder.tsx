@@ -35,8 +35,6 @@ export function Builder({ data }: { data: DataState }) {
   const [saving, setSaving] = useState(false);
   const pan = useRef<{ x: number; y: number } | null>(null);
 
-  const room = data.tree.find((r) => r.id === roomId);
-
   // cm-per-pixel for thresholds/pan
   const cmPerPx = () => {
     const rect = svgRef.current?.getBoundingClientRect();
@@ -155,8 +153,6 @@ export function Builder({ data }: { data: DataState }) {
     }
   }
 
-  const existing = room?.polygon ?? null;
-
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "var(--ph-space-5)", alignItems: "start" }}>
       <Card style={{ padding: 0, overflow: "hidden" }}>
@@ -173,16 +169,27 @@ export function Builder({ data }: { data: DataState }) {
           onDoubleClick={finish}
           onContextMenu={(e) => e.preventDefault()}
         >
-          {/* existing saved polygon for selected room */}
-          {existing && existing.length >= 3 && (
-            <polygon
-              points={existing.map((p) => `${p[0]},${p[1]}`).join(" ")}
-              fill="rgba(110,168,254,0.10)"
-              stroke="var(--ph-accent)"
-              strokeWidth={2 * cmPerPx()}
-              strokeDasharray={`${6 * cmPerPx()} ${4 * cmPerPx()}`}
-            />
-          )}
+          {/* all saved room polygons (labeled, click to select) */}
+          {!tracing &&
+            data.tree.map((r) => {
+              const poly = r.polygon;
+              if (!poly || poly.length < 3) return null;
+              const c = centroid(poly as Polygon);
+              const sel = r.id === roomId;
+              return (
+                <g key={r.id} style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); setRoomId(r.id); }}>
+                  <polygon
+                    points={poly.map((p) => `${p[0]},${p[1]}`).join(" ")}
+                    fill={sel ? "rgba(110,168,254,0.18)" : "rgba(110,168,254,0.06)"}
+                    stroke="var(--ph-accent)"
+                    strokeWidth={(sel ? 2.5 : 1.5) * cmPerPx()}
+                  />
+                  <text x={c[0]} y={c[1]} fill="var(--ph-text)" fontSize={13 * cmPerPx()} textAnchor="middle" style={{ fontFamily: "var(--ph-font-mono)", pointerEvents: "none" }}>
+                    {r.name}
+                  </text>
+                </g>
+              );
+            })}
           {/* walls */}
           {PLAN.walls.map((w, i) => (
             <line key={`w${i}`} x1={w[0]} y1={w[1]} x2={w[2]} y2={w[3]} stroke="#6a6e78" strokeWidth={2 * cmPerPx()} />
