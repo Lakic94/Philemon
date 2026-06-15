@@ -10,5 +10,15 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@better-auth/passkey": "^1.6.18",
+    "better-auth": "^1.2.7"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "react": "^19.0.0"
   }
 }
