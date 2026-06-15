@@ -1,0 +1,71 @@
+/* Philemon design tokens — see STYLE.md. Monochrome-first, dark default. */
+:root {
+  color-scheme: dark;
+
+  /* Surfaces (near-black bg, panels slightly lighter) */
+  --ph-bg: #0a0a0a;
+  --ph-surface: #111317;
+  --ph-surface-2: #16181d;
+  --ph-surface-3: #1c1f26;
+
+  /* Hairline borders */
+  --ph-border: #26282e;
+  --ph-border-strong: #34373f;
+
+  /* Text */
+  --ph-text: #ededed;
+  --ph-muted: #9197a1;
+  --ph-muted-2: #61656e;
+
+  /* The single restrained accent (links / primary action) */
+  --ph-accent: #6ea8fe;
+  --ph-accent-hover: #8ab8ff;
+  --ph-on-accent: #0a0a0a;
+
+  /* Subtle status tints (kept low-saturation, mono-adjacent) */
+  --ph-needed: #7d818b;
+  --ph-ordered: #c8a45c;
+  --ph-bought: #6bbf85;
+
+  /* Radii */
+  --ph-radius: 8px;
+  --ph-radius-sm: 6px;
+  --ph-radius-pill: 999px;
+
+  /* Spacing scale */
+  --ph-space-1: 4px;
+  --ph-space-2: 8px;
+  --ph-space-3: 12px;
+  --ph-space-4: 16px;
+  --ph-space-5: 24px;
+  --ph-space-6: 32px;
+  --ph-space-7: 48px;
+
+  /* Typography */
+  --ph-font-sans: "Inter", "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ph-font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", "Menlo", "Consolas", monospace;
+
+  --ph-text-xs: 0.75rem;
+  --ph-text-sm: 0.85rem;
+  --ph-text-base: 0.95rem;
+  --ph-text-lg: 1.15rem;
+  --ph-text-xl: 1.5rem;
+  --ph-text-2xl: 2rem;
+
+  --ph-content-width: 1100px;
+}
+
+/* Light mode = inverted, if ever needed */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --ph-bg: #fafafa;
+  --ph-surface: #ffffff;
+  --ph-surface-2: #f4f4f5;
+  --ph-surface-3: #ececee;
+  --ph-border: #e2e2e5;
+  --ph-border-strong: #d2d2d6;
+  --ph-text: #111114;
+  --ph-muted: #5c606a;
+  --ph-muted-2: #8a8f98;
+  --ph-on-accent: #ffffff;
+}
