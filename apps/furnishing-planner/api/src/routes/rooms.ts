@@ -53,6 +53,7 @@ roomsRouter.patch(
         columns: z.array(polygonSchema).optional(),
         heightCm: z.number().int().positive().nullable().optional(),
         floorAreaM2: z.number().nonnegative().nullable().optional(),
+        imageKeys: z.array(z.string()).optional(),
         sortOrder: z.number().int().optional(),
       })
       .parse(req.body);

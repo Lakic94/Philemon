@@ -5,6 +5,8 @@ import { api } from "../api.js";
 import type { DataState } from "../data.js";
 import planRaw from "../plan/s6.json";
 import { areaCentroid, centroid, distToSegment, nearestVertex, perimeterCm, shoelaceCm2 } from "../plan/geometry.js";
+import { RoomDetail } from "./RoomDetail.js";
+import { RoomImages } from "./RoomImages.js";
 
 const PLAN = planRaw as {
   width: number;
@@ -234,6 +236,7 @@ export function Builder({ data }: { data: DataState }) {
   const s = svgW > 0 ? vb[2] / svgW : vb[2] / 1200;
 
   return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ph-space-6)" }}>
     <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "var(--ph-space-5)", alignItems: "start" }}>
       <Card style={{ padding: 0, overflow: "hidden", position: "relative" }}>
         <svg
@@ -400,6 +403,14 @@ export function Builder({ data }: { data: DataState }) {
           </Stack>
         </Card>
       </Stack>
+    </div>
+
+    {room && (
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--ph-space-5)" }}>
+        <RoomImages room={room} data={data} />
+        <RoomDetail room={room} data={data} hideGeometry />
+      </div>
+    )}
     </div>
   );
 }

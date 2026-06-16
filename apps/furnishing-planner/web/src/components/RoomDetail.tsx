@@ -11,7 +11,7 @@ function itemPlanned(it: Item): number {
     : it.estimatedCents * it.quantity;
 }
 
-export function RoomDetail({ room, data }: { room: RoomNode; data: DataState }) {
+export function RoomDetail({ room, data, hideGeometry }: { room: RoomNode; data: DataState; hideGeometry?: boolean }) {
   const [editing, setEditing] = useState<{ zoneId: string; item: Item | null } | null>(null);
   const catName = new Map(data.categories.map((c) => [c.id, c.name]));
   const g = room.geometry;
@@ -22,28 +22,30 @@ export function RoomDetail({ room, data }: { room: RoomNode; data: DataState }) 
         <h2>{room.name}</h2>
       </div>
 
-      <Panel style={{ marginBottom: "var(--ph-space-5)" }}>
-        <PanelHeader>
-          <Kicker>Geometry</Kicker>
-        </PanelHeader>
-        <PanelBody>
-          {g ? (
-            <KeyValue
-              rows={[
-                { k: "Floor", v: `${g.floorAreaM2} m²` },
-                { k: "Walls", v: `${g.wallAreaM2} m²` },
-                { k: "Perimeter", v: `${g.perimeterM} m` },
-                { k: "Height", v: room.heightCm ? `${(room.heightCm / 100).toFixed(2)} m` : "—" },
-                { k: "Volume", v: `${g.volumeM3} m³` },
-              ]}
-            />
-          ) : (
-            <p className="ph-muted" style={{ fontSize: "var(--ph-text-sm)" }}>
-              No floor plan traced yet — draw this room in the builder to get exact areas.
-            </p>
-          )}
-        </PanelBody>
-      </Panel>
+      {!hideGeometry && (
+        <Panel style={{ marginBottom: "var(--ph-space-5)" }}>
+          <PanelHeader>
+            <Kicker>Geometry</Kicker>
+          </PanelHeader>
+          <PanelBody>
+            {g ? (
+              <KeyValue
+                rows={[
+                  { k: "Floor", v: `${g.floorAreaM2} m²` },
+                  { k: "Walls", v: `${g.wallAreaM2} m²` },
+                  { k: "Perimeter", v: `${g.perimeterM} m` },
+                  { k: "Height", v: room.heightCm ? `${(room.heightCm / 100).toFixed(2)} m` : "—" },
+                  { k: "Volume", v: `${g.volumeM3} m³` },
+                ]}
+              />
+            ) : (
+              <p className="ph-muted" style={{ fontSize: "var(--ph-text-sm)" }}>
+                No floor plan traced yet — draw this room in the builder to get exact areas.
+              </p>
+            )}
+          </PanelBody>
+        </Panel>
+      )}
 
       {room.zones.map((zone) => (
         <ZoneCard

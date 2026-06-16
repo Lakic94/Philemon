@@ -18,6 +18,7 @@ export const rooms = pgTable("rooms", {
   columns: jsonb().$type<Polygon[]>().notNull().default(sql`'[]'::jsonb`),
   heightCm: integer("height_cm"),
   floorAreaM2: real("floor_area_m2"),
+  imageKeys: jsonb("image_keys").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: ts(),
   updatedAt: ts(),

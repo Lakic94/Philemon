@@ -32,6 +32,8 @@ export interface Room {
   heightCm: number | null;
   /** Official floor area in m² (e.g. from the architect's schedule); authoritative when set. */
   floorAreaM2: number | null;
+  /** Room-level reference images (MinIO object keys). */
+  imageKeys: string[];
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
