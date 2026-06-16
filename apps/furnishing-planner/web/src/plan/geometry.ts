@@ -46,6 +46,24 @@ export function centroid(poly: Polygon): Point {
   return [x / poly.length, y / poly.length];
 }
 
+/** Area-weighted centroid — the true visual center of a (possibly irregular) polygon. */
+export function areaCentroid(poly: Polygon): Point {
+  let a = 0;
+  let cx = 0;
+  let cy = 0;
+  for (let i = 0; i < poly.length; i++) {
+    const p = poly[i];
+    const q = poly[(i + 1) % poly.length];
+    if (!p || !q) continue;
+    const cross = p[0] * q[1] - q[0] * p[1];
+    a += cross;
+    cx += (p[0] + q[0]) * cross;
+    cy += (p[1] + q[1]) * cross;
+  }
+  if (a === 0) return centroid(poly);
+  return [cx / (3 * a), cy / (3 * a)];
+}
+
 export interface Geo {
   floorAreaM2: number;
   perimeterM: number;

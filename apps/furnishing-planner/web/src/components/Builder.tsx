@@ -4,7 +4,7 @@ import type { Point, Polygon } from "@philemon/types";
 import { api } from "../api.js";
 import type { DataState } from "../data.js";
 import planRaw from "../plan/s6.json";
-import { centroid, distToSegment, nearestVertex, perimeterCm, shoelaceCm2 } from "../plan/geometry.js";
+import { areaCentroid, centroid, distToSegment, nearestVertex, perimeterCm, shoelaceCm2 } from "../plan/geometry.js";
 
 const PLAN = planRaw as {
   width: number;
@@ -252,7 +252,7 @@ export function Builder({ data }: { data: DataState }) {
             if (!poly || poly.length < 3) return null;
             const active = mode === "tracing" || mode === "editing" || closed !== null;
             if (r.id === roomId && active) return null;
-            const c = centroid(poly as Polygon);
+            const c = areaCentroid(poly as Polygon);
             const sel = r.id === roomId && !active;
             return (
               <g key={r.id} style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); setRoomId(r.id); }}>
@@ -262,7 +262,7 @@ export function Builder({ data }: { data: DataState }) {
                   stroke={sel ? "var(--ph-accent)" : "#5b6270"}
                   strokeWidth={(sel ? 2.5 : 1.2) * s}
                 />
-                <text x={c[0]} y={c[1]} fill={sel ? "var(--ph-text)" : "var(--ph-muted)"} fontSize={12 * s} textAnchor="middle" style={{ fontFamily: "var(--ph-font-mono)", pointerEvents: "none" }}>{r.name}</text>
+                <text x={c[0]} y={c[1]} fill={sel ? "var(--ph-text)" : "var(--ph-muted)"} fontSize={9 * s} textAnchor="middle" dominantBaseline="central" style={{ fontFamily: "var(--ph-font-mono)", pointerEvents: "none" }}>{r.name}</text>
               </g>
             );
           })}
