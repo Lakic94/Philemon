@@ -8,11 +8,13 @@ look of a modern developer-tool site (reference: Better Auth). This is a visual 
 > drop any data, don't apply it — readability and completeness always win.
 
 ## Color
-Monochrome-first. Near-black background (`#0a0a0a`–`#111`), off-white text (`#ededed`),
-a range of grays for secondary text, borders, surfaces. **Dark mode default** (light =
-inverted: off-white bg, near-black text). Almost no saturated color — at most **one**
-restrained accent, only for links or a single primary action. Secondary/supporting text
-is muted gray, never pure white.
+Monochrome-first, **Linear/Vercel** flavour. **Rich black** page (`#0a0a0a`, range
+`#000`–`#0a0a0a`), **deep charcoal** surfaces (`#0e0e11` → `#1c1c21`), **pure white**
+primary text (`#fff`); zinc grays (`#a1a1aa`, `#71717a`) for secondary text. Hairline
+borders are subtle white-alpha (`rgba(255,255,255,0.08)`). **Dark mode default.**
+The **primary action is a white button with black text** (Vercel-style). At most **one**
+restrained accent (a soft blue) — used only for links, selection, and focus. Secondary
+text is muted gray, never pure white.
 
 ## Typography
 Clean geometric sans (Inter, Geist, or `system-ui`) for headings + body. Monospace

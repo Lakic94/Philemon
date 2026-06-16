@@ -30,8 +30,8 @@
   transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease, opacity 0.12s ease;
 }
 .ph-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.ph-btn--primary { background: var(--ph-accent); color: var(--ph-on-accent); }
-.ph-btn--primary:hover:not(:disabled) { background: var(--ph-accent-hover); }
+.ph-btn--primary { background: var(--ph-primary); color: var(--ph-on-primary); font-weight: 600; }
+.ph-btn--primary:hover:not(:disabled) { background: var(--ph-primary-hover); }
 .ph-btn--ghost { background: transparent; color: var(--ph-text); }
 .ph-btn--ghost:hover:not(:disabled) { background: var(--ph-surface-2); }
 .ph-btn--outline { background: transparent; color: var(--ph-text); border-color: var(--ph-border-strong); }

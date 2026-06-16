@@ -1,31 +1,37 @@
-/* Philemon design tokens — see STYLE.md. Monochrome-first, dark default. */
+/* Philemon design tokens — see STYLE.md. Linear/Vercel monochrome: rich blacks,
+   deep charcoal grays, pure white text, one restrained accent. Dark default. */
 :root {
   color-scheme: dark;
 
-  /* Surfaces (near-black bg, panels slightly lighter) */
+  /* Surfaces — rich black page, deep charcoal elevation */
   --ph-bg: #0a0a0a;
-  --ph-surface: #111317;
-  --ph-surface-2: #16181d;
-  --ph-surface-3: #1c1f26;
+  --ph-surface: #0e0e11;
+  --ph-surface-2: #151518;
+  --ph-surface-3: #1c1c21;
 
-  /* Hairline borders */
-  --ph-border: #26282e;
-  --ph-border-strong: #34373f;
+  /* Hairline borders — subtle white-alpha (Linear/Vercel) */
+  --ph-border: rgba(255, 255, 255, 0.08);
+  --ph-border-strong: rgba(255, 255, 255, 0.14);
 
-  /* Text */
-  --ph-text: #ededed;
-  --ph-muted: #9197a1;
-  --ph-muted-2: #61656e;
+  /* Text — pure white primary, zinc grays for secondary */
+  --ph-text: #ffffff;
+  --ph-muted: #a1a1aa;
+  --ph-muted-2: #71717a;
 
-  /* The single restrained accent (links / primary action) */
-  --ph-accent: #6ea8fe;
-  --ph-accent-hover: #8ab8ff;
+  /* The single restrained accent (links / selection / focus) */
+  --ph-accent: #6e9bff;
+  --ph-accent-hover: #8db0ff;
   --ph-on-accent: #0a0a0a;
 
-  /* Subtle status tints (kept low-saturation, mono-adjacent) */
-  --ph-needed: #7d818b;
-  --ph-ordered: #c8a45c;
-  --ph-bought: #6bbf85;
+  /* Primary action — Vercel-style white button */
+  --ph-primary: #ffffff;
+  --ph-primary-hover: #e4e4e7;
+  --ph-on-primary: #0a0a0a;
+
+  /* Subtle, low-saturation status tints */
+  --ph-needed: #8a8f98;
+  --ph-ordered: #d8a657;
+  --ph-bought: #5fb87a;
 
   /* Radii */
   --ph-radius: 8px;
@@ -58,14 +64,16 @@
 /* Light mode = inverted, if ever needed */
 :root[data-theme="light"] {
   color-scheme: light;
-  --ph-bg: #fafafa;
+  --ph-bg: #ffffff;
   --ph-surface: #ffffff;
   --ph-surface-2: #f4f4f5;
   --ph-surface-3: #ececee;
-  --ph-border: #e2e2e5;
-  --ph-border-strong: #d2d2d6;
-  --ph-text: #111114;
-  --ph-muted: #5c606a;
-  --ph-muted-2: #8a8f98;
-  --ph-on-accent: #ffffff;
+  --ph-border: rgba(0, 0, 0, 0.1);
+  --ph-border-strong: rgba(0, 0, 0, 0.16);
+  --ph-text: #0a0a0a;
+  --ph-muted: #52525b;
+  --ph-muted-2: #71717a;
+  --ph-primary: #0a0a0a;
+  --ph-primary-hover: #27272a;
+  --ph-on-primary: #ffffff;
 }
