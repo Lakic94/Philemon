@@ -170,6 +170,14 @@ def main():
     openings = [o for o in openings if in_apt((o[0] + o[2]) / 2, (o[1] + o[3]) / 2)]
     room_outlines = matched_outlines  # only the 9 real S6 rooms
 
+    # Plan size = the rooms' extent (the real usable area, content starts ~0,0)
+    # + a small margin for exterior wall faces. Ignores stray wall stubs so the
+    # canvas isn't padded with empty space.
+    rx = [p[0] for o in room_outlines for p in o["polygon"]]
+    ry = [p[1] for o in room_outlines for p in o["polygon"]]
+    OW = round(max(rx) + 40, 1)
+    OH = round(max(ry) + 40, 1)
+
     verts = []
     seen = set()
     def add_vert(x, y):
@@ -187,8 +195,8 @@ def main():
 
     web = {
         "unit": "cm",
-        "width": round(maxx - minx, 1),
-        "height": round(maxy - miny, 1),
+        "width": OW,
+        "height": OH,
         "walls": walls,
         "columns": columns,
         "openings": openings,
