@@ -67,6 +67,17 @@ export function computeGeometry(polygon: Polygon, columns: Polygon[], heightCm: 
   };
 }
 
+/** Perpendicular distance from point p to segment a–b. */
+export function distToSegment(p: Point, a: Point, b: Point): number {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const len2 = dx * dx + dy * dy;
+  if (len2 === 0) return Math.hypot(p[0] - a[0], p[1] - a[1]);
+  let t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy));
+}
+
 export function nearestVertex(pt: Point, verts: Point[], maxDistCm: number): Point | null {
   let best: Point | null = null;
   let bestD = maxDistCm;

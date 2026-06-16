@@ -3,29 +3,35 @@ import { Button, Card, Field, KeyValue, Kicker, Select, Stack } from "@philemon/
 import type { Point, Polygon } from "@philemon/types";
 import { api } from "../api.js";
 import type { DataState } from "../data.js";
-import s6png from "../plan/s6.png";
-import { centroid, perimeterCm, shoelaceCm2 } from "../plan/geometry.js";
+import planRaw from "../plan/s6.json";
+import { centroid, distToSegment, nearestVertex, perimeterCm, shoelaceCm2 } from "../plan/geometry.js";
 
-// Natural pixel size of the rendered S6 plan image.
-const IMG_W = 2820;
-const IMG_H = 1820;
-const PAD = 60;
-const CAL_KEY = "philemon.s6.cmPerPx";
-const DEFAULT_CMPERPX = 0.56; // rough; refine with the Calibrate tool
+const PLAN = planRaw as {
+  width: number;
+  height: number;
+  walls: number[][];
+  columns: number[][][];
+  openings: number[][];
+  vertices: number[][];
+};
+const COLS: Polygon[] = PLAN.columns.map((poly) => poly.map((p) => [p[0]!, p[1]!] as Point));
+const PAD = 40;
+const HIDDEN_KEY = "philemon.s6.hiddenWalls";
 
 export function Builder({ data }: { data: DataState }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const [cmPerPx, setCmPerPx] = useState<number>(() => Number(localStorage.getItem(CAL_KEY)) || DEFAULT_CMPERPX);
-  const imgWcm = IMG_W * cmPerPx;
-  const imgHcm = IMG_H * cmPerPx;
-
-  const [vb, setVb] = useState<[number, number, number, number]>([-PAD, -PAD, imgWcm + 2 * PAD, imgHcm + 2 * PAD]);
-  const [mode, setMode] = useState<"idle" | "tracing" | "calibrating">("idle");
+  const [vb, setVb] = useState<[number, number, number, number]>([-PAD, -PAD, PLAN.width + 2 * PAD, PLAN.height + 2 * PAD]);
+  const [mode, setMode] = useState<"idle" | "tracing" | "trim">("idle");
   const [points, setPoints] = useState<Point[]>([]);
   const [hover, setHover] = useState<Point | null>(null);
   const [closed, setClosed] = useState<Polygon | null>(null);
-  const [calib, setCalib] = useState<Point[]>([]);
-  const [calibCm, setCalibCm] = useState("");
+  const [hidden, setHidden] = useState<Set<number>>(() => {
+    try {
+      return new Set<number>(JSON.parse(localStorage.getItem(HIDDEN_KEY) || "[]"));
+    } catch {
+      return new Set();
+    }
+  });
   const [roomId, setRoomId] = useState<string>(data.tree[0]?.id ?? "");
   const [heightCm, setHeightCm] = useState("265");
   const [saving, setSaving] = useState(false);
@@ -33,7 +39,23 @@ export function Builder({ data }: { data: DataState }) {
 
   const room = data.tree.find((r) => r.id === roomId);
 
-  const cmPerScreenPx = () => {
+  const visibleWalls = useMemo(() => PLAN.walls.map((w, i) => ({ w, i })).filter(({ i }) => !hidden.has(i)), [hidden]);
+  const snapVerts = useMemo(() => {
+    const seen = new Set<string>();
+    const out: Point[] = [];
+    for (const { w } of visibleWalls) {
+      for (const v of [[w[0]!, w[1]!] as Point, [w[2]!, w[3]!] as Point]) {
+        const k = `${Math.round(v[0] / 2)},${Math.round(v[1] / 2)}`;
+        if (!seen.has(k)) {
+          seen.add(k);
+          out.push(v);
+        }
+      }
+    }
+    return out;
+  }, [visibleWalls]);
+
+  const sw = () => {
     const rect = svgRef.current?.getBoundingClientRect();
     return rect ? vb[2] / rect.width : 1;
   };
@@ -45,8 +67,11 @@ export function Builder({ data }: { data: DataState }) {
     const m = p.matrixTransform(svg.getScreenCTM()!.inverse());
     return [m.x, m.y];
   }
+  function snap(pt: Point): Point {
+    return nearestVertex(pt, snapVerts, 14 * sw()) ?? pt;
+  }
   function fit() {
-    setVb([-PAD, -PAD, imgWcm + 2 * PAD, imgHcm + 2 * PAD]);
+    setVb([-PAD, -PAD, PLAN.width + 2 * PAD, PLAN.height + 2 * PAD]);
   }
   function zoom(factor: number, center?: Point) {
     setVb(([x, y, w, h]) => {
@@ -68,34 +93,53 @@ export function Builder({ data }: { data: DataState }) {
   }
   function onPointerMove(e: React.PointerEvent) {
     if (pan.current) {
-      const k = cmPerScreenPx();
+      const k = sw();
       const dx = (e.clientX - pan.current.x) * k;
       const dy = (e.clientY - pan.current.y) * k;
       pan.current = { x: e.clientX, y: e.clientY };
       setVb(([x, y, w, h]) => [x - dx, y - dy, w, h]);
       return;
     }
-    if (mode === "tracing") setHover(toCm(e));
+    if (mode === "tracing") setHover(snap(toCm(e)));
   }
   function onPointerUp(e: React.PointerEvent) {
     pan.current = null;
     (e.target as Element).releasePointerCapture?.(e.pointerId);
   }
+  function persistHidden(next: Set<number>) {
+    setHidden(next);
+    localStorage.setItem(HIDDEN_KEY, JSON.stringify([...next]));
+  }
   function onClick(e: React.MouseEvent) {
     const pt = toCm(e);
-    if (mode === "calibrating") {
-      setCalib((c) => (c.length >= 2 ? [pt] : [...c, pt]));
+    if (mode === "trim") {
+      const thr = 12 * sw();
+      let best = -1;
+      let bestD = thr;
+      for (const { w, i } of visibleWalls) {
+        const d = distToSegment(pt, [w[0]!, w[1]!], [w[2]!, w[3]!]);
+        if (d < bestD) {
+          bestD = d;
+          best = i;
+        }
+      }
+      if (best >= 0) {
+        const next = new Set(hidden);
+        next.add(best);
+        persistHidden(next);
+      }
       return;
     }
     if (mode !== "tracing") return;
+    const sp = snap(pt);
     if (points.length >= 3) {
       const first = points[0]!;
-      if (Math.hypot(pt[0] - first[0], pt[1] - first[1]) <= 18 * cmPerScreenPx()) {
+      if (Math.hypot(sp[0] - first[0], sp[1] - first[1]) <= 18 * sw()) {
         finish();
         return;
       }
     }
-    setPoints((ps) => [...ps, pt]);
+    setPoints((ps) => [...ps, sp]);
   }
   function finish() {
     if (points.length >= 3) {
@@ -109,19 +153,6 @@ export function Builder({ data }: { data: DataState }) {
     setClosed(null);
     setHover(null);
     setMode("idle");
-  }
-  function applyCalibration() {
-    if (calib.length !== 2) return;
-    const measuredCm = Math.hypot(calib[1]![0] - calib[0]![0], calib[1]![1] - calib[0]![1]);
-    const realCm = Number(calibCm);
-    if (!realCm || !measuredCm) return;
-    const next = cmPerPx * (realCm / measuredCm);
-    setCmPerPx(next);
-    localStorage.setItem(CAL_KEY, String(next));
-    setCalib([]);
-    setCalibCm("");
-    setMode("idle");
-    setTimeout(fit, 0);
   }
 
   useEffect(() => {
@@ -139,13 +170,24 @@ export function Builder({ data }: { data: DataState }) {
   const livePoly: Polygon = closed ?? (hover && mode === "tracing" ? [...points, hover] : points);
   const tracedFloorM2 = livePoly.length >= 3 ? shoelaceCm2(livePoly) / 10_000 : 0;
   const tracedPerimM = livePoly.length >= 3 ? perimeterCm(livePoly) / 100 : 0;
-  const wallM2 = useMemo(() => tracedPerimM * ((Number(heightCm) || 0) / 100), [tracedPerimM, heightCm]);
+  const wallM2 = tracedPerimM * ((Number(heightCm) || 0) / 100);
 
   async function save() {
     if (!closed || !roomId) return;
     setSaving(true);
     try {
-      await api.updateRoom(roomId, { polygon: closed, columns: [], heightCm: Number(heightCm) || null });
+      const cols = COLS.filter((c) => {
+        const ctr = centroid(c);
+        // include columns inside the traced polygon
+        let inside = false;
+        for (let i = 0, j = closed.length - 1; i < closed.length; j = i++) {
+          const a = closed[i]!;
+          const b = closed[j]!;
+          if (a[1] > ctr[1] !== b[1] > ctr[1] && ctr[0] < ((b[0] - a[0]) * (ctr[1] - a[1])) / (b[1] - a[1]) + a[0]) inside = !inside;
+        }
+        return inside;
+      });
+      await api.updateRoom(roomId, { polygon: closed, columns: cols, heightCm: Number(heightCm) || null });
       await data.reload();
       reset();
     } finally {
@@ -153,7 +195,7 @@ export function Builder({ data }: { data: DataState }) {
     }
   }
 
-  const sw = cmPerScreenPx();
+  const s = sw();
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "var(--ph-space-5)", alignItems: "start" }}>
@@ -162,7 +204,7 @@ export function Builder({ data }: { data: DataState }) {
           ref={svgRef}
           viewBox={vb.join(" ")}
           preserveAspectRatio="xMidYMid meet"
-          style={{ width: "100%", height: "74vh", display: "block", background: "#fff", cursor: mode === "idle" ? "grab" : "crosshair", touchAction: "none" }}
+          style={{ width: "100%", height: "74vh", display: "block", background: "var(--ph-bg)", cursor: mode === "idle" ? "grab" : "crosshair", touchAction: "none" }}
           onWheel={onWheel}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
@@ -171,8 +213,20 @@ export function Builder({ data }: { data: DataState }) {
           onDoubleClick={finish}
           onContextMenu={(e) => e.preventDefault()}
         >
-          <image href={s6png} x={0} y={0} width={imgWcm} height={imgHcm} preserveAspectRatio="none" />
+          {/* columns */}
+          {COLS.map((c, i) => (
+            <polygon key={`c${i}`} points={c.map((p) => `${p[0]},${p[1]}`).join(" ")} fill="#3a3d45" stroke="#52555f" strokeWidth={s} />
+          ))}
+          {/* openings (doors/windows) */}
+          {PLAN.openings.map((o, i) => (
+            <line key={`o${i}`} x1={o[0]} y1={o[1]} x2={o[2]} y2={o[3]} stroke="#6bbf85" strokeWidth={2.5 * s} />
+          ))}
+          {/* walls (visible only) */}
+          {visibleWalls.map(({ w, i }) => (
+            <line key={`w${i}`} x1={w[0]} y1={w[1]} x2={w[2]} y2={w[3]} stroke={mode === "trim" ? "#c2c7d0" : "#9aa0aa"} strokeWidth={(mode === "trim" ? 3.5 : 2.5) * s} strokeLinecap="round" />
+          ))}
 
+          {/* saved rooms */}
           {mode === "idle" &&
             data.tree.map((r) => {
               const poly = r.polygon;
@@ -181,26 +235,21 @@ export function Builder({ data }: { data: DataState }) {
               const sel = r.id === roomId;
               return (
                 <g key={r.id} style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); setRoomId(r.id); }}>
-                  <polygon points={poly.map((p) => `${p[0]},${p[1]}`).join(" ")} fill={sel ? "rgba(110,168,254,0.28)" : "rgba(110,168,254,0.12)"} stroke="#2b6fe0" strokeWidth={(sel ? 3 : 2) * sw} />
-                  <text x={c[0]} y={c[1]} fill="#0a0a0a" fontSize={13 * sw} textAnchor="middle" style={{ fontFamily: "var(--ph-font-mono)", pointerEvents: "none" }}>
-                    {r.name}
-                  </text>
+                  <polygon points={poly.map((p) => `${p[0]},${p[1]}`).join(" ")} fill={sel ? "rgba(110,168,254,0.22)" : "rgba(110,168,254,0.08)"} stroke="var(--ph-accent)" strokeWidth={(sel ? 2.5 : 1.5) * s} />
+                  <text x={c[0]} y={c[1]} fill="var(--ph-text)" fontSize={13 * s} textAnchor="middle" style={{ fontFamily: "var(--ph-font-mono)", pointerEvents: "none" }}>{r.name}</text>
                 </g>
               );
             })}
 
+          {/* snap vertices while tracing */}
+          {mode === "tracing" && snapVerts.map((v, i) => <circle key={`v${i}`} cx={v[0]} cy={v[1]} r={2.5 * s} fill="#34373f" />)}
+
+          {/* live trace */}
           {livePoly.length >= 2 && (
-            <polyline points={livePoly.map((p) => `${p[0]},${p[1]}`).join(" ")} fill={closed ? "rgba(110,168,254,0.3)" : "none"} stroke="#2b6fe0" strokeWidth={3 * sw} />
+            <polyline points={livePoly.map((p) => `${p[0]},${p[1]}`).join(" ")} fill={closed ? "rgba(110,168,254,0.22)" : "none"} stroke="var(--ph-accent)" strokeWidth={2.5 * s} />
           )}
-          {points.map((p, i) => (
-            <circle key={i} cx={p[0]} cy={p[1]} r={(i === 0 ? 6 : 4) * sw} fill="#2b6fe0" />
-          ))}
-          {calib.map((p, i) => (
-            <circle key={`cal${i}`} cx={p[0]} cy={p[1]} r={6 * sw} fill="#e5793a" />
-          ))}
-          {calib.length === 2 && (
-            <line x1={calib[0]![0]} y1={calib[0]![1]} x2={calib[1]![0]} y2={calib[1]![1]} stroke="#e5793a" strokeWidth={3 * sw} />
-          )}
+          {points.map((p, i) => <circle key={`p${i}`} cx={p[0]} cy={p[1]} r={(i === 0 ? 5 : 3.5) * s} fill="var(--ph-accent)" />)}
+          {hover && mode === "tracing" && <circle cx={hover[0]} cy={hover[1]} r={6 * s} fill="none" stroke="var(--ph-accent)" strokeWidth={1.5 * s} />}
         </svg>
 
         <div style={{ position: "absolute", right: 12, bottom: 12, display: "flex", gap: 6 }}>
@@ -218,8 +267,7 @@ export function Builder({ data }: { data: DataState }) {
               <Select value={roomId} onChange={(e) => setRoomId(e.target.value)}>
                 {data.tree.map((r) => (
                   <option key={r.id} value={r.id}>
-                    {r.name}
-                    {r.polygon ? " ✓" : ""}
+                    {r.name}{r.polygon ? " ✓" : ""}
                   </option>
                 ))}
               </Select>
@@ -229,50 +277,35 @@ export function Builder({ data }: { data: DataState }) {
             </Field>
 
             {mode === "idle" && !closed && (
-              <Button variant="primary" onClick={() => { setPoints([]); setClosed(null); setMode("tracing"); }}>
-                Trace room
-              </Button>
+              <div className="ph-row" style={{ gap: "var(--ph-space-2)" }}>
+                <Button variant="primary" onClick={() => { setPoints([]); setClosed(null); setMode("tracing"); }}>Trace room</Button>
+                <Button variant="outline" onClick={() => setMode("trim")}>Trim walls</Button>
+              </div>
             )}
             {mode === "tracing" && (
               <>
                 <p className="ph-muted" style={{ fontSize: "var(--ph-text-xs)" }}>
-                  Click the room&apos;s inner corners on the plan. Click the first point or press Enter to close · Backspace undo · Esc cancel · scroll to zoom.
+                  Click the room&apos;s inner corners (snaps to wall vertices). First point / Enter to close · Backspace undo · Esc cancel · scroll to zoom.
                 </p>
                 <Button variant="outline" onClick={reset}>Cancel</Button>
               </>
             )}
-            {closed && (
-              <div className="ph-row" style={{ gap: "var(--ph-space-2)" }}>
-                <Button variant="primary" onClick={save} disabled={saving || !roomId}>
-                  {saving ? "Saving…" : "Save to room"}
-                </Button>
-                <Button variant="ghost" onClick={reset}>Discard</Button>
-              </div>
-            )}
-          </Stack>
-        </Card>
-
-        <Card>
-          <Stack>
-            <Kicker>Scale</Kicker>
-            {mode === "calibrating" ? (
+            {mode === "trim" && (
               <>
                 <p className="ph-muted" style={{ fontSize: "var(--ph-text-xs)" }}>
-                  Click two points on a dimension you know (e.g. the ends of the “765” line), then enter its real length.
+                  Click any wall segment that isn&apos;t part of your apartment to remove it. Zoom in for accuracy.
                 </p>
-                {calib.length === 2 && (
-                  <div className="ph-row" style={{ gap: "var(--ph-space-2)" }}>
-                    <input className="ph-input ph-input--mono" type="number" placeholder="cm" value={calibCm} onChange={(e) => setCalibCm(e.target.value)} />
-                    <Button variant="primary" size="sm" onClick={applyCalibration} disabled={!calibCm}>Apply</Button>
-                  </div>
-                )}
-                <Button variant="ghost" size="sm" onClick={() => { setMode("idle"); setCalib([]); }}>Cancel</Button>
+                <div className="ph-row" style={{ gap: "var(--ph-space-2)" }}>
+                  <Button variant="ghost" size="sm" onClick={() => persistHidden(new Set())}>Restore all</Button>
+                  <Button variant="primary" size="sm" onClick={() => setMode("idle")}>Done ({hidden.size} hidden)</Button>
+                </div>
               </>
-            ) : (
-              <>
-                <p className="ph-mono ph-muted" style={{ fontSize: "var(--ph-text-xs)" }}>{cmPerPx.toFixed(4)} cm/px</p>
-                <Button variant="outline" size="sm" onClick={() => { setMode("calibrating"); setCalib([]); }}>Calibrate scale</Button>
-              </>
+            )}
+            {closed && (
+              <div className="ph-row" style={{ gap: "var(--ph-space-2)" }}>
+                <Button variant="primary" onClick={save} disabled={saving || !roomId}>{saving ? "Saving…" : "Save to room"}</Button>
+                <Button variant="ghost" onClick={reset}>Discard</Button>
+              </div>
             )}
           </Stack>
         </Card>
@@ -289,7 +322,7 @@ export function Builder({ data }: { data: DataState }) {
               ]}
             />
             <p className="ph-muted" style={{ fontSize: "var(--ph-text-xs)" }}>
-              Floor area is the architect&apos;s official number. Trace to capture wall area (paint) — calibrate the scale first for accuracy.
+              Exact 1:1 cm — no calibration. Floor uses the architect&apos;s official number; trace to get wall area for paint.
             </p>
           </Stack>
         </Card>
