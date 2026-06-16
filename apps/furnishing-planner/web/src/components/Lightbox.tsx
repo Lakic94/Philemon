@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { imageUrl } from "../api.js";
 
 /** Full-screen image carousel. Cycle with ‹ ›, arrow keys, or Esc to close. */
@@ -20,7 +21,7 @@ export function Lightbox({ keys, index, onClose }: { keys: string[]; index: numb
   }, [n]);
 
   if (!n) return null;
-  return (
+  return createPortal(
     <div className="lightbox" onClick={onClose}>
       <button className="lightbox__close" onClick={onClose} title="Close (Esc)">✕</button>
       {n > 1 && (
@@ -43,6 +44,7 @@ export function Lightbox({ keys, index, onClose }: { keys: string[]; index: numb
           ))}
         </div>
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }
