@@ -97,6 +97,8 @@ def main():
     ys = [v[1] for v in raw_walls] + [v[3] for v in raw_walls]
     minx, maxx = min(xs), max(xs)
     miny, maxy = min(ys), max(ys)
+    W = round(maxx - minx, 1)
+    H = round(maxy - miny, 1)
 
     def tx(x):
         return round(x - minx, 1)
@@ -113,6 +115,60 @@ def main():
         cx = round(sum(p[0] for p in poly) / len(poly), 1)
         cy = round(sum(p[1] for p in poly) / len(poly), 1)
         room_outlines.append({"areaM2": round(area / 1e4, 2), "polygon": poly, "cx": cx, "cy": cy})
+
+    # Identify S6's real rooms (mirror the seed matcher) and crop everything to
+    # the apartment's bounds — removes neighbour walls outside the unit.
+    OFFICIAL = [
+        (9.32, None), (4.15, None), (18.97, None), (11.47, None), (13.24, None),
+        (5.17, None), (3.89, None), (5.27, "TR"), (2.47, "TL"),
+    ]
+
+    def quad(o, pos):
+        left = o["cx"] < W * 0.45
+        right = o["cx"] > W * 0.55
+        top = o["cy"] < H * 0.5
+        return (right and top) if pos == "TR" else (left and top)
+
+    used = set()
+    matched = []
+    for area, pos in OFFICIAL:
+        if not pos:
+            continue
+        cs = sorted((abs(o["areaM2"] - area), i) for i, o in enumerate(room_outlines)
+                    if i not in used and abs(o["areaM2"] - area) <= 1.5 and quad(o, pos))
+        if cs:
+            used.add(cs[0][1])
+            matched.append(cs[0][1])
+    pairs = []
+    for area, pos in OFFICIAL:
+        if pos:
+            continue
+        for i, o in enumerate(room_outlines):
+            if i not in used:
+                pairs.append((abs(o["areaM2"] - area), area, i))
+    pairs.sort()
+    used_area = set()
+    for d, area, i in pairs:
+        if area in used_area or i in used or d > 1.5:
+            continue
+        used_area.add(area)
+        used.add(i)
+        matched.append(i)
+    matched_outlines = [room_outlines[i] for i in matched]
+
+    axs = [p[0] for o in matched_outlines for p in o["polygon"]]
+    ays = [p[1] for o in matched_outlines for p in o["polygon"]]
+    M = 50  # cm margin to keep exterior wall faces
+    ax0, ax1 = min(axs) - M, max(axs) + M
+    ay0, ay1 = min(ays) - M, max(ays) + M
+
+    def in_apt(x, y):
+        return ax0 <= x <= ax1 and ay0 <= y <= ay1
+
+    walls = [w for w in walls if in_apt((w[0] + w[2]) / 2, (w[1] + w[3]) / 2)]
+    columns = [c for c in columns if in_apt(sum(p[0] for p in c) / len(c), sum(p[1] for p in c) / len(c))]
+    openings = [o for o in openings if in_apt((o[0] + o[2]) / 2, (o[1] + o[3]) / 2)]
+    room_outlines = matched_outlines  # only the 9 real S6 rooms
 
     verts = []
     seen = set()

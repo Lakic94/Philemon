@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, Field, KeyValue, Kicker, Select, Stack } from "@philemon/ui";
 import type { Point, Polygon } from "@philemon/types";
 import { api } from "../api.js";
@@ -41,7 +41,20 @@ export function Builder({ data }: { data: DataState }) {
   const [roomId, setRoomId] = useState<string>(data.tree[0]?.id ?? "");
   const [heightCm, setHeightCm] = useState("265");
   const [saving, setSaving] = useState(false);
+  const [svgW, setSvgW] = useState(0);
   const pan = useRef<{ x: number; y: number } | null>(null);
+
+  // Measure the SVG width so the render scale is correct on first paint and on resize
+  // (reading the ref during render is empty on the first pass → caused the size jump).
+  useLayoutEffect(() => {
+    const el = svgRef.current;
+    if (!el) return;
+    const measure = () => setSvgW(el.getBoundingClientRect().width);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const room = data.tree.find((r) => r.id === roomId);
 
@@ -217,7 +230,7 @@ export function Builder({ data }: { data: DataState }) {
     }
   }
 
-  const s = sw();
+  const s = svgW > 0 ? vb[2] / svgW : vb[2] / 1200;
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "var(--ph-space-5)", alignItems: "start" }}>
