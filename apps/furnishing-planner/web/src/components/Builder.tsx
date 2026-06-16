@@ -245,20 +245,27 @@ export function Builder({ data }: { data: DataState }) {
             <line key={`w${i}`} x1={w[0]} y1={w[1]} x2={w[2]} y2={w[3]} stroke={mode === "trim" ? "#c2c7d0" : "#9aa0aa"} strokeWidth={(mode === "trim" ? 3.5 : 2.5) * s} strokeLinecap="round" />
           ))}
 
-          {/* saved rooms (hidden while editing the selected one) */}
-          {(mode === "idle" || mode === "trim") &&
-            data.tree.map((r) => {
-              const poly = r.polygon;
-              if (!poly || poly.length < 3) return null;
-              const c = centroid(poly as Polygon);
-              const sel = r.id === roomId;
-              return (
-                <g key={r.id} style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); setRoomId(r.id); }}>
-                  <polygon points={poly.map((p) => `${p[0]},${p[1]}`).join(" ")} fill={sel ? "rgba(110,168,254,0.22)" : "rgba(110,168,254,0.08)"} stroke="var(--ph-accent)" strokeWidth={(sel ? 2.5 : 1.5) * s} />
-                  <text x={c[0]} y={c[1]} fill="var(--ph-text)" fontSize={13 * s} textAnchor="middle" style={{ fontFamily: "var(--ph-font-mono)", pointerEvents: "none" }}>{r.name}</text>
-                </g>
-              );
-            })}
+          {/* saved rooms: subtle outlines; highlight only when selected; the room
+              being traced/edited is hidden so the new shape replaces it */}
+          {data.tree.map((r) => {
+            const poly = r.polygon;
+            if (!poly || poly.length < 3) return null;
+            const active = mode === "tracing" || mode === "editing" || closed !== null;
+            if (r.id === roomId && active) return null;
+            const c = centroid(poly as Polygon);
+            const sel = r.id === roomId && !active;
+            return (
+              <g key={r.id} style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); setRoomId(r.id); }}>
+                <polygon
+                  points={poly.map((p) => `${p[0]},${p[1]}`).join(" ")}
+                  fill={sel ? "rgba(110,168,254,0.22)" : "transparent"}
+                  stroke={sel ? "var(--ph-accent)" : "#5b6270"}
+                  strokeWidth={(sel ? 2.5 : 1.2) * s}
+                />
+                <text x={c[0]} y={c[1]} fill={sel ? "var(--ph-text)" : "var(--ph-muted)"} fontSize={12 * s} textAnchor="middle" style={{ fontFamily: "var(--ph-font-mono)", pointerEvents: "none" }}>{r.name}</text>
+              </g>
+            );
+          })}
 
           {/* edit mode: the room's polygon + draggable handles */}
           {mode === "editing" && editPoly && (
