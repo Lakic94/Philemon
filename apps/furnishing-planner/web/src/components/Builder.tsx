@@ -226,7 +226,7 @@ export function Builder({ data }: { data: DataState }) {
           ref={svgRef}
           viewBox={vb.join(" ")}
           preserveAspectRatio="xMidYMid meet"
-          style={{ width: "100%", height: "74vh", display: "block", background: "var(--ph-bg)", cursor: mode === "idle" ? "grab" : "crosshair", touchAction: "none" }}
+          style={{ width: "100%", height: "58vh", display: "block", background: "var(--ph-bg)", cursor: mode === "idle" ? "grab" : "crosshair", touchAction: "none" }}
           onWheel={onWheel}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}

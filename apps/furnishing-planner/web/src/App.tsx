@@ -26,7 +26,7 @@ function Shell({ email }: { email: string }) {
   return (
     <div className="app-shell">
       <TopBar email={email} tab={tab} setTab={setTab} data={data} />
-      <main className="page ph-fade-in">
+      <main className={"page ph-fade-in" + (tab === "builder" ? " wide" : "")}>
         {data.loading ? (
           <p className="ph-muted">Loading…</p>
         ) : data.error ? (
