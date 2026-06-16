@@ -1,51 +1,47 @@
 # Philemon — Platform Design Language
 
-Applies to **every** Philemon app. A refined, minimalist, technical aesthetic — the
-look of a modern developer-tool site (reference: Better Auth). This is a visual layer only.
+Applies to **every** Philemon app. Strict, minimal, technical — the look of a
+modern developer-tool site (Linear / Vercel). This is a visual layer only.
 
 > **Hard rule:** style is subordinate to information. Never summarize, omit, reorder,
 > truncate, or restructure content to fit the style. If a styling choice would hide or
 > drop any data, don't apply it — readability and completeness always win.
 
-## Color
-Monochrome-first, **Linear/Vercel** flavour. **Rich black** page (`#0a0a0a`, range
-`#000`–`#0a0a0a`), **deep charcoal** surfaces (`#0e0e11` → `#1c1c21`), **pure white**
-primary text (`#fff`); zinc grays (`#a1a1aa`, `#71717a`) for secondary text. Hairline
-borders are subtle white-alpha (`rgba(255,255,255,0.08)`). **Dark mode default.**
-The **primary action is a white button with black text** (Vercel-style). At most **one**
-restrained accent (a soft blue) — used only for links, selection, and focus. Secondary
-text is muted gray, never pure white.
+## Color — strict monochrome
+- **Pure black** page background (`#000`). **No** colored backgrounds.
+- **Panels/cards share the page color** (`#000`) — they are separated from the
+  background **only by a hairline border**, never by a fill.
+- **Pure white** primary text (`#fff`); zinc grays (`#a1a1aa`, `#71717a`) for secondary.
+- Hairline borders: subtle white-alpha (`rgba(255,255,255,0.12)`).
+- **No accent hue — no blue, no color.** The "accent" is white (links, selection,
+  focus). The single primary action is a **white button with black text**.
+- Status is conveyed by **grayscale brightness** + label, not hue.
+- Dark only.
+
+## Shape — flat
+**90° corners everywhere.** Border-radius is `0`. No rounded cards, inputs, buttons, or pills.
 
 ## Typography
-Clean geometric sans (Inter, Geist, or `system-ui`) for headings + body. Monospace
-(`ui-monospace`, "JetBrains Mono") for code, inline tags, labels, keys, IDs, version
-numbers, and any technical token. **The sans-vs-mono contrast is core** — lean on it to
-distinguish prose from data. Headings tight (low line-height, slightly negative
-letter-spacing), clearly larger than body. Body small-to-normal, comfortable. Use
-small-uppercase or monospace "kicker" labels above sections instead of decorative headers.
+**Geist Mono** throughout (loaded from Google Fonts), fallback `ui-monospace`. Tight
+headings (low line-height, slightly negative letter-spacing). Mono/small-uppercase
+"kicker" labels over decorative headers.
 
 ## Borders & surfaces
-1px hairline borders in low-contrast gray to separate/group. Prefer thin borders + subtle
-background-shade differences over heavy shadows. Small-to-medium radius (≈6–10px) on cards,
-code blocks, inputs, buttons — rounded, not bubbly. Cards/panels sit on a surface only
-slightly lighter/darker than the page.
+1px hairline white-alpha borders are the primary separator. No fills, no heavy shadows —
+content boxes sit directly on the black page, outlined by their border.
 
 ## Spacing & layout
-Generous whitespace, clear vertical rhythm between blocks. Comfortable line-height. Let
-content breathe. Consistent padding inside cards/panels. Constrain text to a readable max width.
+Generous whitespace, clear vertical rhythm, comfortable line-height, readable max width.
 
 ## Components (styled, not invented)
-- **Tables:** hairline borders, subtle header row, monospace numeric/ID columns, comfortable row padding.
-- **Code:** dark block, small radius, monospace; syntax-color the code only (one of the few places color appears); inline code gets a faint background pill.
-- **Lists:** tight, clean, minimal bullets.
-- **Labels/tags/badges:** small monospace pills with hairline border or faint fill.
-- **Buttons/links:** one solid primary (high contrast); others ghost/outline; links in the single accent color.
-- **Key–value / field data:** align cleanly, monospace the values, muted gray for the keys.
+- **Tables:** hairline borders, subtle header row, monospace numeric/ID columns.
+- **Code:** bordered block, monospace; inline code = faint bordered pill (flat).
+- **Badges:** flat monospace pills with a hairline border, grayscale.
+- **Buttons:** one solid **white** primary (black text); others ghost/outline; links white.
+- **Key–value:** muted gray keys, monospace values.
 
 ## Motion & detail
-Minimal and precise — at most subtle hover states and gentle fade-ins. No bounce, no
-decorative imagery, no stock illustrations. Reads as engineered and exact, not playful.
+Minimal and precise — subtle hover + gentle fade-ins. No bounce, no decorative imagery.
 
 ## Implementation
-Lives as design tokens + primitives in `packages/ui` (imported by every app). Reference
-this file before building any UI.
+Design tokens + primitives in `packages/ui`. Reference this before building any UI.

@@ -1,42 +1,44 @@
-/* Philemon design tokens — see STYLE.md. Linear/Vercel monochrome: rich blacks,
-   deep charcoal grays, pure white text, one restrained accent. Dark default. */
+/* Philemon design tokens — see STYLE.md.
+   Strict monochrome (Linear/Vercel): pure-black bg, flat 90° corners, no accent
+   color, boxes share the background and are separated only by hairline borders.
+   Font: Geist Mono throughout. Dark only. */
 :root {
   color-scheme: dark;
 
-  /* Surfaces — rich black page, deep charcoal elevation */
-  --ph-bg: #0a0a0a;
-  --ph-surface: #0e0e11;
-  --ph-surface-2: #151518;
-  --ph-surface-3: #1c1c21;
+  /* Surfaces — pure black; panels share the page color (border-separated) */
+  --ph-bg: #000000;
+  --ph-surface: #000000;
+  --ph-surface-2: #0a0a0a; /* faint, for hover / input wells only */
+  --ph-surface-3: #141414;
 
-  /* Hairline borders — subtle white-alpha (Linear/Vercel) */
-  --ph-border: rgba(255, 255, 255, 0.08);
-  --ph-border-strong: rgba(255, 255, 255, 0.14);
+  /* Hairline borders — the only thing separating content from background */
+  --ph-border: rgba(255, 255, 255, 0.12);
+  --ph-border-strong: rgba(255, 255, 255, 0.26);
 
   /* Text — pure white primary, zinc grays for secondary */
   --ph-text: #ffffff;
   --ph-muted: #a1a1aa;
   --ph-muted-2: #71717a;
 
-  /* The single restrained accent (links / selection / focus) */
-  --ph-accent: #6e9bff;
-  --ph-accent-hover: #8db0ff;
-  --ph-on-accent: #0a0a0a;
+  /* "Accent" is monochrome — white. Used for links / selection / focus. */
+  --ph-accent: #ffffff;
+  --ph-accent-hover: #d4d4d8;
+  --ph-on-accent: #000000;
 
-  /* Primary action — Vercel-style white button */
+  /* Primary action — white button, black text */
   --ph-primary: #ffffff;
-  --ph-primary-hover: #e4e4e7;
-  --ph-on-primary: #0a0a0a;
+  --ph-primary-hover: #d4d4d8;
+  --ph-on-primary: #000000;
 
-  /* Subtle, low-saturation status tints */
-  --ph-needed: #8a8f98;
-  --ph-ordered: #d8a657;
-  --ph-bought: #5fb87a;
+  /* Status — grayscale brightness, no hue */
+  --ph-needed: #6b6b73;
+  --ph-ordered: #a1a1aa;
+  --ph-bought: #ffffff;
 
-  /* Radii */
-  --ph-radius: 8px;
-  --ph-radius-sm: 6px;
-  --ph-radius-pill: 999px;
+  /* Flat — 90° corners everywhere */
+  --ph-radius: 0px;
+  --ph-radius-sm: 0px;
+  --ph-radius-pill: 0px;
 
   /* Spacing scale */
   --ph-space-1: 4px;
@@ -47,16 +49,16 @@
   --ph-space-6: 32px;
   --ph-space-7: 48px;
 
-  /* Typography */
-  --ph-font-sans: "Inter", "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --ph-font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", "Menlo", "Consolas", monospace;
+  /* Typography — Geist Mono throughout */
+  --ph-font-sans: "Geist Mono", ui-monospace, "SFMono-Regular", "Menlo", "Consolas", monospace;
+  --ph-font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", "Menlo", "Consolas", monospace;
 
   --ph-text-xs: 0.75rem;
   --ph-text-sm: 0.85rem;
-  --ph-text-base: 0.95rem;
-  --ph-text-lg: 1.15rem;
-  --ph-text-xl: 1.5rem;
-  --ph-text-2xl: 2rem;
+  --ph-text-base: 0.9rem;
+  --ph-text-lg: 1.1rem;
+  --ph-text-xl: 1.4rem;
+  --ph-text-2xl: 1.85rem;
 
   --ph-content-width: 1100px;
 }
@@ -66,14 +68,17 @@
   color-scheme: light;
   --ph-bg: #ffffff;
   --ph-surface: #ffffff;
-  --ph-surface-2: #f4f4f5;
-  --ph-surface-3: #ececee;
-  --ph-border: rgba(0, 0, 0, 0.1);
-  --ph-border-strong: rgba(0, 0, 0, 0.16);
-  --ph-text: #0a0a0a;
+  --ph-surface-2: #fafafa;
+  --ph-surface-3: #f4f4f5;
+  --ph-border: rgba(0, 0, 0, 0.14);
+  --ph-border-strong: rgba(0, 0, 0, 0.28);
+  --ph-text: #000000;
   --ph-muted: #52525b;
   --ph-muted-2: #71717a;
-  --ph-primary: #0a0a0a;
+  --ph-accent: #000000;
+  --ph-accent-hover: #27272a;
+  --ph-on-accent: #ffffff;
+  --ph-primary: #000000;
   --ph-primary-hover: #27272a;
   --ph-on-primary: #ffffff;
 }

@@ -65,7 +65,7 @@
 .moodgrid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--ph-radius-sm); border: 1px solid var(--ph-border); }
 .mood-empty { color: var(--ph-muted); font-size: var(--ph-text-sm); }
 
-.thumb { width: 36px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid var(--ph-border); }
+.thumb { width: 36px; height: 36px; object-fit: cover; border-radius: 0; border: 1px solid var(--ph-border); }
 
 .modal-backdrop {
   position: fixed; inset: 0; background: rgba(0,0,0,0.6);

@@ -239,7 +239,7 @@ export function Builder({ data }: { data: DataState }) {
             <polygon key={`c${i}`} points={c.map((p) => `${p[0]},${p[1]}`).join(" ")} fill="#3a3d45" stroke="#52555f" strokeWidth={s} />
           ))}
           {PLAN.openings.map((o, i) => (
-            <line key={`o${i}`} x1={o[0]} y1={o[1]} x2={o[2]} y2={o[3]} stroke="#6bbf85" strokeWidth={2.5 * s} />
+            <line key={`o${i}`} x1={o[0]} y1={o[1]} x2={o[2]} y2={o[3]} stroke="#8a8f98" strokeWidth={2.5 * s} />
           ))}
           {visibleWalls.map(({ w, i }) => (
             <line key={`w${i}`} x1={w[0]} y1={w[1]} x2={w[2]} y2={w[3]} stroke={mode === "trim" ? "#c2c7d0" : "#9aa0aa"} strokeWidth={(mode === "trim" ? 3.5 : 2.5) * s} strokeLinecap="round" />
@@ -258,7 +258,7 @@ export function Builder({ data }: { data: DataState }) {
               <g key={r.id} style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); setRoomId(r.id); }}>
                 <polygon
                   points={poly.map((p) => `${p[0]},${p[1]}`).join(" ")}
-                  fill={sel ? "rgba(110,168,254,0.22)" : "transparent"}
+                  fill={sel ? "rgba(255,255,255,0.12)" : "transparent"}
                   stroke={sel ? "var(--ph-accent)" : "#5b6270"}
                   strokeWidth={(sel ? 2.5 : 1.2) * s}
                 />
@@ -270,14 +270,14 @@ export function Builder({ data }: { data: DataState }) {
           {/* edit mode: the room's polygon + draggable handles */}
           {mode === "editing" && editPoly && (
             <>
-              <polygon points={editPoly.map((p) => `${p[0]},${p[1]}`).join(" ")} fill="rgba(110,168,254,0.18)" stroke="var(--ph-accent)" strokeWidth={2.5 * s} />
+              <polygon points={editPoly.map((p) => `${p[0]},${p[1]}`).join(" ")} fill="rgba(255,255,255,0.10)" stroke="var(--ph-accent)" strokeWidth={2.5 * s} />
               {editPoly.map((p, i) => (
                 <circle
                   key={`h${i}`}
                   cx={p[0]}
                   cy={p[1]}
                   r={(i === selVert ? 8 : 6) * s}
-                  fill={i === selVert ? "#e5793a" : "var(--ph-accent)"}
+                  fill={i === selVert ? "#ffffff" : "#a1a1aa"}
                   stroke="#fff"
                   strokeWidth={1.5 * s}
                   style={{ cursor: "move" }}
@@ -294,7 +294,7 @@ export function Builder({ data }: { data: DataState }) {
 
           {mode === "tracing" && snapVerts.map((v, i) => <circle key={`v${i}`} cx={v[0]} cy={v[1]} r={2 * s} fill="#34373f" />)}
           {livePoly.length >= 2 && (
-            <polyline points={livePoly.map((p) => `${p[0]},${p[1]}`).join(" ")} fill={closed ? "rgba(110,168,254,0.22)" : "none"} stroke="var(--ph-accent)" strokeWidth={2.5 * s} />
+            <polyline points={livePoly.map((p) => `${p[0]},${p[1]}`).join(" ")} fill={closed ? "rgba(255,255,255,0.14)" : "none"} stroke="var(--ph-accent)" strokeWidth={2.5 * s} />
           )}
           {points.map((p, i) => <circle key={`p${i}`} cx={p[0]} cy={p[1]} r={(i === 0 ? 5 : 3.5) * s} fill="var(--ph-accent)" />)}
           {hover && mode === "tracing" && <circle cx={hover[0]} cy={hover[1]} r={6 * s} fill="none" stroke="var(--ph-accent)" strokeWidth={1.5 * s} />}
