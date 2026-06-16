@@ -7,8 +7,29 @@
  *   Total of zone budget targets = 42,000 €.
  */
 import { db, schema } from "./db/index.js";
+import outlinesRaw from "./seed_outlines.json" with { type: "json" };
 
 const eur = (n: number) => n * 100; // € → cents
+
+// Room-outline polygons (cm) extracted from the DXF POVRSINE layer.
+const OUTLINES = outlinesRaw as { areaM2: number; polygon: number[][] }[];
+
+/** Match each room to its closest-area outline polygon (global greedy, <1.5 m² apart). */
+function matchOutlines(rooms: { floor: number }[]): (number[][] | null)[] {
+  const pairs: { ri: number; oi: number; d: number }[] = [];
+  rooms.forEach((r, ri) => OUTLINES.forEach((o, oi) => pairs.push({ ri, oi, d: Math.abs(o.areaM2 - r.floor) })));
+  pairs.sort((a, b) => a.d - b.d);
+  const result: (number[][] | null)[] = rooms.map(() => null);
+  const usedO = new Set<number>();
+  const usedR = new Set<number>();
+  for (const p of pairs) {
+    if (usedR.has(p.ri) || usedO.has(p.oi) || p.d > 1.5) continue;
+    result[p.ri] = OUTLINES[p.oi]!.polygon;
+    usedR.add(p.ri);
+    usedO.add(p.oi);
+  }
+  return result;
+}
 
 // ---- categories (seeded defaults; userCreated=false) ----
 const CATEGORIES = [
@@ -127,10 +148,25 @@ async function seed() {
     .returning();
   const catId = new Map(cats.map((c) => [c.name, c.id]));
 
+  const polys = matchOutlines(ROOMS);
   const rooms = await db
     .insert(schema.rooms)
-    .values(ROOMS.map((r) => ({ name: r.name, floorAreaM2: r.floor, sortOrder: r.sortOrder })))
+    .values(
+      ROOMS.map((r, i) => {
+        const poly = polys[i];
+        const polygon = poly ? poly.map((p) => [p[0]!, p[1]!] as [number, number]) : null;
+        return {
+          name: r.name,
+          floorAreaM2: r.floor,
+          polygon,
+          columns: [],
+          heightCm: polygon ? 265 : null,
+          sortOrder: r.sortOrder,
+        };
+      }),
+    )
     .returning();
+  const matched = polys.filter(Boolean).length;
   const roomId = new Map(ROOMS.map((r, i) => [r.key, rooms[i]!.id]));
 
   const zones = await db
@@ -170,7 +206,7 @@ async function seed() {
   const totalEstimate = ITEMS.reduce((s, i) => s + i.eur, 0);
   console.log("[seed] done:");
   console.log(`  categories: ${cats.length}`);
-  console.log(`  rooms:      ${rooms.length}`);
+  console.log(`  rooms:      ${rooms.length}  (${matched} pre-outlined from the DXF)`);
   console.log(`  zones:      ${zones.length}  (budget targets total €${totalTarget.toLocaleString()})`);
   console.log(`  items:      ${flatRows.length} flat + ${areaRows.length} area-draft`);
   console.log(`  estimates total: €${totalEstimate.toLocaleString()}`);
