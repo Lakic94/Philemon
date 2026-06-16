@@ -4,6 +4,7 @@ import type { Item } from "@philemon/types";
 import { api, imageUrl, type RoomNode, type ZoneWithItems } from "../api.js";
 import { zoneTotals, type DataState } from "../data.js";
 import { ItemEditor } from "./ItemEditor.js";
+import { Lightbox } from "./Lightbox.js";
 
 function itemPlanned(it: Item): number {
   return it.kind === "area"
@@ -89,6 +90,7 @@ function ZoneCard({
   onDelete: (id: string) => void;
 }) {
   const t = zoneTotals(zone);
+  const [lb, setLb] = useState<string[] | null>(null);
   return (
     <Panel className="zone-block">
       <PanelHeader>
@@ -123,7 +125,7 @@ function ZoneCard({
               const img = imageUrl(it.imageKeys[0]);
               return (
                 <tr key={it.id}>
-                  <td>{img && <img src={img} alt="" className="thumb" />}</td>
+                  <td>{img && <img src={img} alt="" className="thumb clickable" onClick={() => setLb(it.imageKeys)} />}</td>
                   <td>
                     {it.productUrl ? (
                       <a href={it.productUrl} target="_blank" rel="noreferrer">
@@ -171,6 +173,7 @@ function ZoneCard({
           </Button>
         </div>
       </PanelBody>
+      {lb && lb.length > 0 && <Lightbox keys={lb} index={0} onClose={() => setLb(null)} />}
     </Panel>
   );
 }

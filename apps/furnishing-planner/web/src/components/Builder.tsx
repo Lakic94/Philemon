@@ -6,6 +6,7 @@ import type { DataState } from "../data.js";
 import planRaw from "../plan/s6.json";
 import { areaCentroid, centroid, distToSegment, nearestVertex, perimeterCm, shoelaceCm2 } from "../plan/geometry.js";
 import { RoomDetail } from "./RoomDetail.js";
+import { RoomImages } from "./RoomImages.js";
 
 const PLAN = planRaw as {
   width: number;
@@ -406,6 +407,7 @@ export function Builder({ data }: { data: DataState }) {
 
     {room && (
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--ph-space-5)" }}>
+        <RoomImages room={room} data={data} />
         <RoomDetail room={room} data={data} hideGeometry />
       </div>
     )}

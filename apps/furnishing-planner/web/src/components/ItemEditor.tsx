@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button, Card, Field, Input, Kicker, Select, Stack, Textarea } from "@philemon/ui";
 import type { Category, Item, ItemStatus, RoomGeometry } from "@philemon/types";
 import { api, imageUrl, uploadImage } from "../api.js";
+import { Lightbox } from "./Lightbox.js";
 
 export function ItemEditor({
   zoneId,
@@ -30,6 +31,7 @@ export function ItemEditor({
   const [productUrl, setProductUrl] = useState(item?.productUrl ?? "");
   const [notes, setNotes] = useState(item?.notes ?? "");
   const [imageKeys, setImageKeys] = useState<string[]>(item?.imageKeys ?? []);
+  const [lb, setLb] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -165,9 +167,9 @@ export function ItemEditor({
           <div className="ph-field">
             <span className="ph-label">Images</span>
             <div className="moodgrid">
-              {imageKeys.map((k) => (
+              {imageKeys.map((k, idx) => (
                 <div key={k} style={{ position: "relative" }}>
-                  <img src={imageUrl(k) ?? undefined} alt="" />
+                  <img className="clickable" src={imageUrl(k) ?? undefined} alt="" onClick={() => setLb(idx)} />
                   <button
                     type="button"
                     onClick={() => setImageKeys((ks) => ks.filter((x) => x !== k))}
@@ -201,6 +203,7 @@ export function ItemEditor({
           </div>
         </Stack>
       </Card>
+      {lb !== null && <Lightbox keys={imageKeys} index={lb} onClose={() => setLb(null)} />}
     </div>
   );
 }
