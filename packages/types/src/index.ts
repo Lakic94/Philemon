@@ -30,6 +30,8 @@ export interface Room {
   columns: Polygon[];
   /** Ceiling height in cm (for wall-area math). */
   heightCm: number | null;
+  /** Official floor area in m² (e.g. from the architect's schedule); authoritative when set. */
+  floorAreaM2: number | null;
   sortOrder: number;
   createdAt: string;
   updatedAt: string;

@@ -23,21 +23,24 @@ const CATEGORIES = [
   "Other",
 ];
 
-// ---- physical rooms ----
-const ROOMS: { key: string; name: string; sortOrder: number }[] = [
-  { key: "open", name: "Open-plan (Kitchen · Dining · Living)", sortOrder: 0 },
-  { key: "bed", name: "Bedroom", sortOrder: 1 },
-  { key: "office", name: "Office", sortOrder: 2 },
-  { key: "hall", name: "Hallway", sortOrder: 3 },
-  { key: "bath1", name: "Ensuite bathroom", sortOrder: 4 },
-  { key: "bath2", name: "Second bathroom", sortOrder: 5 },
+// ---- physical rooms (real S6 layout + official floor areas from the architect PDF) ----
+const ROOMS: { key: string; name: string; floor: number; sortOrder: number }[] = [
+  { key: "hall", name: "Entrance hall", floor: 9.32, sortOrder: 0 },
+  { key: "kitchen", name: "Kitchen", floor: 4.15, sortOrder: 1 },
+  { key: "living", name: "Living + Dining", floor: 18.97, sortOrder: 2 },
+  { key: "bed", name: "Bedroom", floor: 11.47, sortOrder: 3 },
+  { key: "office", name: "Office", floor: 13.24, sortOrder: 4 },
+  { key: "bath1", name: "Bathroom 1", floor: 5.17, sortOrder: 5 },
+  { key: "bath2", name: "Bathroom 2", floor: 3.89, sortOrder: 6 },
+  { key: "balc1", name: "Balcony (large)", floor: 5.27, sortOrder: 7 },
+  { key: "balc2", name: "Balcony (small)", floor: 2.47, sortOrder: 8 },
 ];
 
-// ---- zones (budget buckets) → sum of targets = 42,000 € ----
+// ---- zones (budget buckets) mapped onto the real rooms → sum of targets = 42,000 € ----
 const ZONES: { name: string; roomKey: string; target: number; sortOrder: number }[] = [
-  { name: "Kitchen", roomKey: "open", target: 10000, sortOrder: 0 },
-  { name: "Dining", roomKey: "open", target: 3400, sortOrder: 1 },
-  { name: "Living", roomKey: "open", target: 6500, sortOrder: 2 },
+  { name: "Kitchen", roomKey: "kitchen", target: 10000, sortOrder: 0 },
+  { name: "Dining", roomKey: "living", target: 3400, sortOrder: 1 },
+  { name: "Living", roomKey: "living", target: 6500, sortOrder: 2 },
   { name: "Bedroom", roomKey: "bed", target: 7100, sortOrder: 3 },
   { name: "Office", roomKey: "office", target: 4500, sortOrder: 4 },
   { name: "Hallway", roomKey: "hall", target: 2500, sortOrder: 5 },
@@ -126,7 +129,7 @@ async function seed() {
 
   const rooms = await db
     .insert(schema.rooms)
-    .values(ROOMS.map((r) => ({ name: r.name, sortOrder: r.sortOrder })))
+    .values(ROOMS.map((r) => ({ name: r.name, floorAreaM2: r.floor, sortOrder: r.sortOrder })))
     .returning();
   const roomId = new Map(ROOMS.map((r, i) => [r.key, rooms[i]!.id]));
 

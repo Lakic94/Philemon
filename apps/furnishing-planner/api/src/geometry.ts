@@ -33,17 +33,22 @@ export function computeRoomGeometry(
   polygon: Polygon | null,
   columns: Polygon[],
   heightCm: number | null,
+  officialFloorM2: number | null = null,
 ): RoomGeometry | null {
-  if (!polygon || polygon.length < 3) return null;
-  const floorCm2 = shoelaceAreaCm2(polygon) - columns.reduce((s, c) => s + shoelaceAreaCm2(c), 0);
-  const perimCm = perimeterCm(polygon);
   const h = heightCm ?? 0;
-  const wallCm2 = perimCm * h;
+  const traced = polygon && polygon.length >= 3;
+  const tracedFloorM2 = traced
+    ? (shoelaceAreaCm2(polygon!) - columns.reduce((s, c) => s + shoelaceAreaCm2(c), 0)) / 10_000
+    : 0;
+  const perimM = traced ? perimeterCm(polygon!) / 100 : 0;
+  // Official area is authoritative for floor/volume when present.
+  const floorM2 = officialFloorM2 ?? tracedFloorM2;
+  if (!traced && officialFloorM2 == null) return null;
   return {
-    floorAreaM2: round2(floorCm2 / 10_000),
-    perimeterM: round2(perimCm / 100),
-    wallAreaM2: round2(wallCm2 / 10_000),
-    volumeM3: round2((floorCm2 / 10_000) * (h / 100)),
+    floorAreaM2: round2(floorM2),
+    perimeterM: round2(perimM),
+    wallAreaM2: round2((perimM * h * 100) / 10_000), // perim(m)*h(cm) -> m²
+    volumeM3: round2(floorM2 * (h / 100)),
   };
 }
 

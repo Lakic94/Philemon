@@ -22,7 +22,7 @@ roomsRouter.get(
     ]);
     const tree = rms.map((r) => ({
       ...r,
-      geometry: computeRoomGeometry(r.polygon ?? null, r.columns ?? [], r.heightCm),
+      geometry: computeRoomGeometry(r.polygon ?? null, r.columns ?? [], r.heightCm, r.floorAreaM2),
       surfaces: srf.filter((s) => s.roomId === r.id),
       zones: zns
         .filter((z) => z.roomId === r.id)
@@ -52,6 +52,7 @@ roomsRouter.patch(
         polygon: polygonSchema.nullable().optional(),
         columns: z.array(polygonSchema).optional(),
         heightCm: z.number().int().positive().nullable().optional(),
+        floorAreaM2: z.number().nonnegative().nullable().optional(),
         sortOrder: z.number().int().optional(),
       })
       .parse(req.body);
@@ -64,7 +65,7 @@ roomsRouter.patch(
       res.status(404).json({ error: "not found" });
       return;
     }
-    res.json({ ...row, geometry: computeRoomGeometry(row.polygon ?? null, row.columns ?? [], row.heightCm) });
+    res.json({ ...row, geometry: computeRoomGeometry(row.polygon ?? null, row.columns ?? [], row.heightCm, row.floorAreaM2) });
   }),
 );
 
