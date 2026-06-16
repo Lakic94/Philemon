@@ -26,11 +26,23 @@ export function Lightbox({ keys, index, onClose }: { keys: string[]; index: numb
       {n > 1 && (
         <button className="lightbox__nav lightbox__prev" onClick={(e) => { e.stopPropagation(); prev(); }} title="Previous (←)">‹</button>
       )}
-      <img src={imageUrl(keys[i]) ?? undefined} alt="" onClick={(e) => e.stopPropagation()} />
+      <img className="lightbox__main" src={imageUrl(keys[i]) ?? undefined} alt="" onClick={(e) => e.stopPropagation()} />
       {n > 1 && (
         <button className="lightbox__nav lightbox__next" onClick={(e) => { e.stopPropagation(); next(); }} title="Next (→)">›</button>
       )}
-      {n > 1 && <div className="lightbox__count">{i + 1} / {n}</div>}
+      {n > 1 && (
+        <div className="lightbox__strip" onClick={(e) => e.stopPropagation()}>
+          {keys.map((k, idx) => (
+            <img
+              key={k}
+              src={imageUrl(k) ?? undefined}
+              alt=""
+              className={"lightbox__thumb" + (idx === i ? " active" : "")}
+              onClick={() => setI(idx)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
