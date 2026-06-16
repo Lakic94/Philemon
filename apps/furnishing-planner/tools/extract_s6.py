@@ -116,12 +116,18 @@ def main():
 
     verts = []
     seen = set()
+    def add_vert(x, y):
+        key = (round(x / 2), round(y / 2))
+        if key not in seen:
+            seen.add(key)
+            verts.append([x, y])
     for x1, y1, x2, y2 in walls:
-        for x, y in ((x1, y1), (x2, y2)):
-            key = (round(x / 2), round(y / 2))
-            if key not in seen:
-                seen.add(key)
-                verts.append([x, y])
+        add_vert(x1, y1)
+        add_vert(x2, y2)
+    # also snap to exact room corners (POVRSINE), even where wall lines are missing
+    for ro in room_outlines:
+        for p in ro["polygon"]:
+            add_vert(p[0], p[1])
 
     web = {
         "unit": "cm",
