@@ -17,7 +17,7 @@ const base = {
   areaM2: z.number().nonnegative().nullable().optional(),
   ratePerM2Cents: z.number().int().nonnegative().nullable().optional(),
   surfaceId: z.string().uuid().nullable().optional(),
-  imageKey: z.string().nullable().optional(),
+  imageKeys: z.array(z.string()).optional(),
   productUrl: z.string().url().nullable().optional(),
   notes: z.string().nullable().optional(),
 };

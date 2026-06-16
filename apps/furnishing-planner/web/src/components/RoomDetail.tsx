@@ -120,7 +120,7 @@ function ZoneCard({
           </thead>
           <tbody>
             {zone.items.map((it) => {
-              const img = imageUrl(it.imageKey);
+              const img = imageUrl(it.imageKeys[0]);
               return (
                 <tr key={it.id}>
                   <td>{img && <img src={img} alt="" className="thumb" />}</td>

@@ -61,7 +61,8 @@ export const items = pgTable("items", {
   areaM2: real("area_m2"),
   ratePerM2Cents: integer("rate_per_m2_cents"),
   surfaceId: uuid("surface_id").references(() => surfaces.id, { onDelete: "set null" }),
-  imageKey: text("image_key"),
+  imageKey: text("image_key"), // legacy single image (unused; kept to avoid a destructive migration)
+  imageKeys: jsonb("image_keys").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
   productUrl: text("product_url"),
   notes: text(),
   createdAt: ts(),

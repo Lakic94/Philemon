@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, Card, Field, Input, Kicker, Select, Stack, Textarea } from "@philemon/ui";
 import type { Category, Item, ItemStatus, RoomGeometry } from "@philemon/types";
-import { api, uploadImage } from "../api.js";
+import { api, imageUrl, uploadImage } from "../api.js";
 
 export function ItemEditor({
   zoneId,
@@ -29,24 +29,25 @@ export function ItemEditor({
   const [status, setStatus] = useState<ItemStatus>(item?.status ?? "needed");
   const [productUrl, setProductUrl] = useState(item?.productUrl ?? "");
   const [notes, setNotes] = useState(item?.notes ?? "");
-  const [imageKey, setImageKey] = useState<string | null>(item?.imageKey ?? null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [imageKeys, setImageKeys] = useState<string[]>(item?.imageKeys ?? []);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
     setBusy(true);
     setErr(null);
     try {
-      const { key, publicUrl } = await uploadImage(f);
-      setImageKey(key);
-      setPreview(publicUrl);
+      for (const f of files) {
+        const { key } = await uploadImage(f);
+        setImageKeys((ks) => [...ks, key]);
+      }
     } catch {
       setErr("Image upload failed (is MinIO up?)");
     } finally {
       setBusy(false);
+      e.target.value = "";
     }
   }
 
@@ -62,7 +63,7 @@ export function ItemEditor({
         status,
         productUrl: productUrl.trim() || null,
         notes: notes.trim() || null,
-        imageKey,
+        imageKeys,
         actualCents: actualEur === "" ? null : Math.round(Number(actualEur) * 100),
       };
       const body =
@@ -159,14 +160,30 @@ export function ItemEditor({
             <Field label="Product link">
               <Input className="span2" value={productUrl} placeholder="https://…" onChange={(e) => setProductUrl(e.target.value)} />
             </Field>
-            <Field label="Reference image">
-              <input type="file" accept="image/*" onChange={onFile} />
-            </Field>
           </div>
 
-          {(preview || imageKey) && (
-            <img src={preview ?? undefined} alt="" className="thumb" style={{ width: 80, height: 80 }} />
-          )}
+          <div className="ph-field">
+            <span className="ph-label">Images</span>
+            <div className="moodgrid">
+              {imageKeys.map((k) => (
+                <div key={k} style={{ position: "relative" }}>
+                  <img src={imageUrl(k) ?? undefined} alt="" />
+                  <button
+                    type="button"
+                    onClick={() => setImageKeys((ks) => ks.filter((x) => x !== k))}
+                    title="Remove"
+                    style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, border: "1px solid var(--ph-border-strong)", background: "rgba(0,0,0,0.7)", color: "var(--ph-text)", cursor: "pointer", fontSize: "var(--ph-text-xs)", lineHeight: 1 }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              <label className="ph-btn ph-btn--outline" style={{ cursor: "pointer", aspectRatio: "1", height: "auto", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {busy ? "…" : "+ Add"}
+                <input type="file" accept="image/*" multiple onChange={onFile} style={{ display: "none" }} disabled={busy} />
+              </label>
+            </div>
+          </div>
 
           <Field label="Notes">
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
