@@ -321,7 +321,7 @@ export function Builder({ data }: { data: DataState }) {
         </div>
       </Card>
 
-      <Stack>
+      <Stack style={{ height: "50vh" }}>
         <Card>
           <Stack>
             <Kicker>Builder</Kicker>
@@ -383,7 +383,7 @@ export function Builder({ data }: { data: DataState }) {
           </Stack>
         </Card>
 
-        <Card>
+        <Card style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
           <Stack>
             <Kicker>Geometry</Kicker>
             <KeyValue
