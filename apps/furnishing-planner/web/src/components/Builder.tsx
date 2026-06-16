@@ -17,7 +17,7 @@ const PLAN = planRaw as {
 const COLS: Polygon[] = PLAN.columns.map((poly) => poly.map((p) => [p[0]!, p[1]!] as Point));
 const SNAP_VERTS: Point[] = PLAN.vertices.map((v) => [v[0]!, v[1]!]); // wall + room corners
 const PAD = 40;
-const PLAN_ASPECT = (PLAN.height + 2 * PAD) / (PLAN.width + 2 * PAD);
+const PLAN_RATIO = (PLAN.width + 2 * PAD) / (PLAN.height + 2 * PAD); // width / height
 const HIDDEN_KEY = "philemon.s6.hiddenWalls";
 
 type Mode = "idle" | "tracing" | "trim" | "editing";
@@ -240,7 +240,7 @@ export function Builder({ data }: { data: DataState }) {
           ref={svgRef}
           viewBox={vb.join(" ")}
           preserveAspectRatio="xMidYMid meet"
-          style={{ width: "100%", height: svgW > 0 ? `${Math.round(svgW * PLAN_ASPECT)}px` : "55vh", maxHeight: "82vh", display: "block", background: "var(--ph-bg)", cursor: mode === "idle" ? "grab" : "crosshair", touchAction: "none" }}
+          style={{ height: "50vh", width: `calc(50vh * ${PLAN_RATIO.toFixed(4)})`, maxWidth: "100%", margin: "0 auto", display: "block", background: "var(--ph-bg)", cursor: mode === "idle" ? "grab" : "crosshair", touchAction: "none" }}
           onWheel={onWheel}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
