@@ -11,20 +11,52 @@ import outlinesRaw from "./seed_outlines.json" with { type: "json" };
 
 const eur = (n: number) => n * 100; // € → cents
 
-// Room-outline polygons (cm) extracted from the DXF POVRSINE layer.
-const OUTLINES = outlinesRaw as { areaM2: number; polygon: number[][] }[];
+// Room outlines (cm) extracted from the DXF POVRSINE layer, with centroids.
+type Outline = { areaM2: number; polygon: number[][]; cx: number; cy: number };
+const OUT = outlinesRaw as { width: number; height: number; outlines: Outline[] };
 
-/** Match each room to its closest-area outline polygon (global greedy, <1.5 m² apart). */
-function matchOutlines(rooms: { floor: number }[]): (number[][] | null)[] {
-  const pairs: { ri: number; oi: number; d: number }[] = [];
-  rooms.forEach((r, ri) => OUTLINES.forEach((o, oi) => pairs.push({ ri, oi, d: Math.abs(o.areaM2 - r.floor) })));
-  pairs.sort((a, b) => a.d - b.d);
+type RoomDef = { floor: number; pos?: "TL" | "TR" };
+
+function inQuadrant(o: Outline, pos: "TL" | "TR"): boolean {
+  const left = o.cx < OUT.width * 0.45;
+  const right = o.cx > OUT.width * 0.55;
+  const top = o.cy < OUT.height * 0.5;
+  return pos === "TR" ? right && top : left && top;
+}
+
+/**
+ * Match rooms to outline polygons. Position-hinted rooms (the balconies) are
+ * placed by quadrant first (area alone is ambiguous — two ~5 m² shapes exist),
+ * then the rest by closest area (global greedy, <1.5 m² apart).
+ */
+function matchOutlines(rooms: RoomDef[]): (number[][] | null)[] {
+  const O = OUT.outlines;
   const result: (number[][] | null)[] = rooms.map(() => null);
   const usedO = new Set<number>();
+
+  rooms.forEach((r, ri) => {
+    if (!r.pos) return;
+    const cands = O.map((o, oi) => ({ o, oi }))
+      .filter(({ o, oi }) => !usedO.has(oi) && Math.abs(o.areaM2 - r.floor) <= 1.5 && inQuadrant(o, r.pos!))
+      .sort((a, b) => Math.abs(a.o.areaM2 - r.floor) - Math.abs(b.o.areaM2 - r.floor));
+    if (cands[0]) {
+      result[ri] = cands[0].o.polygon;
+      usedO.add(cands[0].oi);
+    }
+  });
+
+  const pairs: { ri: number; oi: number; d: number }[] = [];
+  rooms.forEach((r, ri) => {
+    if (result[ri]) return;
+    O.forEach((o, oi) => {
+      if (!usedO.has(oi)) pairs.push({ ri, oi, d: Math.abs(o.areaM2 - r.floor) });
+    });
+  });
+  pairs.sort((a, b) => a.d - b.d);
   const usedR = new Set<number>();
   for (const p of pairs) {
     if (usedR.has(p.ri) || usedO.has(p.oi) || p.d > 1.5) continue;
-    result[p.ri] = OUTLINES[p.oi]!.polygon;
+    result[p.ri] = O[p.oi]!.polygon;
     usedR.add(p.ri);
     usedO.add(p.oi);
   }
@@ -45,7 +77,7 @@ const CATEGORIES = [
 ];
 
 // ---- physical rooms (real S6 layout + official floor areas from the architect PDF) ----
-const ROOMS: { key: string; name: string; floor: number; sortOrder: number }[] = [
+const ROOMS: { key: string; name: string; floor: number; sortOrder: number; pos?: "TL" | "TR" }[] = [
   { key: "hall", name: "Entrance hall", floor: 9.32, sortOrder: 0 },
   { key: "kitchen", name: "Kitchen", floor: 4.15, sortOrder: 1 },
   { key: "living", name: "Living + Dining", floor: 18.97, sortOrder: 2 },
@@ -53,8 +85,8 @@ const ROOMS: { key: string; name: string; floor: number; sortOrder: number }[] =
   { key: "office", name: "Office", floor: 13.24, sortOrder: 4 },
   { key: "bath1", name: "Bathroom 1", floor: 5.17, sortOrder: 5 },
   { key: "bath2", name: "Bathroom 2", floor: 3.89, sortOrder: 6 },
-  { key: "balc1", name: "Balcony (large)", floor: 5.27, sortOrder: 7 },
-  { key: "balc2", name: "Balcony (small)", floor: 2.47, sortOrder: 8 },
+  { key: "balc1", name: "Balcony (large)", floor: 5.27, sortOrder: 7, pos: "TR" },
+  { key: "balc2", name: "Balcony (small)", floor: 2.47, sortOrder: 8, pos: "TL" },
 ];
 
 // ---- zones (budget buckets) mapped onto the real rooms → sum of targets = 42,000 € ----

@@ -107,10 +107,12 @@ def main():
     walls = [[tx(x1), ty(y1), tx(x2), ty(y2)] for (x1, y1, x2, y2) in raw_walls]
     columns = [[[tx(x), ty(y)] for (x, y) in poly] for poly in raw_columns]
     openings = [[tx(x1), ty(y1), tx(x2), ty(y2)] for (x1, y1, x2, y2) in raw_openings]
-    room_outlines = [
-        {"areaM2": round(area / 1e4, 2), "polygon": [[tx(x), ty(y)] for (x, y) in pts]}
-        for (area, pts) in sorted(raw_rooms, key=lambda r: -r[0])
-    ]
+    room_outlines = []
+    for area, pts in sorted(raw_rooms, key=lambda r: -r[0]):
+        poly = [[tx(x), ty(y)] for (x, y) in pts]
+        cx = round(sum(p[0] for p in poly) / len(poly), 1)
+        cy = round(sum(p[1] for p in poly) / len(poly), 1)
+        room_outlines.append({"areaM2": round(area / 1e4, 2), "polygon": poly, "cx": cx, "cy": cy})
 
     verts = []
     seen = set()
@@ -136,7 +138,7 @@ def main():
         json.dump(web, f, separators=(",", ":"))
     os.makedirs(os.path.dirname(OUT_API), exist_ok=True)
     with open(OUT_API, "w", encoding="utf-8") as f:
-        json.dump(room_outlines, f, separators=(",", ":"))
+        json.dump({"width": web["width"], "height": web["height"], "outlines": room_outlines}, f, separators=(",", ":"))
 
     print(f"web -> {os.path.abspath(OUT_WEB)}")
     print(f"api -> {os.path.abspath(OUT_API)}")
