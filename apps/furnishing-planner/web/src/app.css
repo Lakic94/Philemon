@@ -38,7 +38,7 @@
 .nav button.active { color: var(--ph-text); background: var(--ph-surface-2); border-color: var(--ph-border); }
 
 .page { width: 100%; max-width: 1200px; margin: 0 auto; padding: var(--ph-space-6) var(--ph-space-5); }
-.page.wide { max-width: 1600px; }
+.page.wide { max-width: none; }
 
 .plan-layout { display: grid; grid-template-columns: 280px 1fr; gap: var(--ph-space-5); align-items: start; }
 .room-list { display: flex; flex-direction: column; gap: var(--ph-space-2); }
