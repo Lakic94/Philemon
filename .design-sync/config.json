@@ -1,0 +1,15 @@
+{
+  "projectId": "2ee3f782-4821-44fe-abce-6d715af3643d",
+  "shape": "package",
+  "pkg": "@philemon/ui",
+  "globalName": "PhilemonUI",
+  "srcDir": "src",
+  "tsconfig": "tsconfig.json",
+  "buildCmd": "node .design-sync/build-css.mjs",
+  "cssEntry": "dist/philemon-ui.css",
+  "readmeHeader": ".design-sync/conventions.md",
+  "overrides": {
+    "Table": { "cardMode": "column" },
+    "TableWrap": { "cardMode": "column" }
+  }
+}
